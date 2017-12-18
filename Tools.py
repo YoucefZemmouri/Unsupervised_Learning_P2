@@ -1,6 +1,7 @@
 import numpy as np
 from sklearn.cluster import KMeans
 from numpy import linalg as LA
+from scipy import linalg as sLA
 import time
 from scipy.stats import ortho_group
 
@@ -103,21 +104,63 @@ def K_Subspaces(X, n, d):
     :param X: Data
     :param n: Number of subspaces
     :param d: List of dimensions of the subspaces
-    :return: Subspace parametrs, low dimension representation and segmentation of the data
+    :return: assignments, subspaces represented by U & mu
     """
-    Mus = np.random.rand((X.shape[0], len(d)))
-    U = []
-    for i in range(len(d)):
-        temp = ortho_group(X.shape[0])
-        temp = U[:,0:d[i]]
-        U.append(temp)
+    print('K-subspace...')
+    assert(len(d) == n)
+    N = X.shape[1]
+    D = X.shape[0]
+    Mus = np.random.rand(D, n)
+    U = [np.array([]) for _ in range(n)]
+    # generate random ortho matrix is very slow for large dimension
+    # for l in range(n):
+    #     print(1)
+    #     temp = special_ortho_group.rvs(D)
+    #     temp = temp[:, 0:d[l]]
+    #     U.append(temp)
 
-    I = np.identity(X.shape[0])
-    dist = np.zeros(len(d))
+    # subspace_has[l] is the list of point indices that belongs to Subspace_l
+    subspace_has = [[] for _ in range(n)]
 
+    # start with a random assignment
+    for j in range(N):
+        subspace_has[np.random.randint(n)].append(j)
+
+    subspace_has_old = subspace_has
+    count = 0
     while True:
-        for j in range(X.shape[1]):
-            for l in range(len(d)):
-                dist[l] = (I - (U[l].T).dot(U[l])).dot(X[:,j]-Mus[l])
-            i = np.argmin(dist)
-    return
+        print(count)
+        # Do PCA for each subspace
+        for l in range(n):
+            points = subspace_has[l]
+            X_in_l = X[:, points]
+            Mus[:, l] = X_in_l.sum(1).T / len(points)
+            x_mu = X_in_l - Mus[:, l, None]
+            M = x_mu.dot(x_mu.T)
+            evalue, evector = sLA.eigh(M,eigvals=(D-d[l],D-1))  # d[l] largest eigen
+            U[l] = evector # last(largest) d[l] evector
+
+        # Calculate distance
+        I = np.identity(D)
+        dist = np.zeros((n, N))  # dist[l,j] means distance of X_j to Subspace_l
+        for l in range(n):
+            A = (I - U[l].dot(U[l].T))
+            for j in range(N):
+                v = A.dot(X[:, j]-Mus[:, l])
+                dist[l, j] = np.sum(v*v)
+
+        # Assign point to nearest subspace
+        subspace_has = [[] for _ in range(n)]
+        for j in range(N):
+            l_best_for_j = np.argmin(dist[:, j])
+            subspace_has[l_best_for_j].append(j)
+        if subspace_has_old == subspace_has:  # no updates for assignments
+            break
+        subspace_has_old = subspace_has
+        count += 1
+
+    assignments = np.zeros(N).astype(int)  # assignments[j] means X_j assigned to Subspace_{assignments[j]}
+    for l in range(n):
+        assignments[subspace_has[l]] = l
+    print('{} iterations used for K-subspace'.format(count))
+    return assignments, U, Mus

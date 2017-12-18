@@ -45,55 +45,51 @@ def show_error_table(cells, sigmas, Ks):
     # plt.colorbar(sm, fraction=0.026, pad=0.04)
     plt.show()
 
+def find_best_K_and_sigma(X_small, labels_small, n):
+    K_largest = 30
+    nbrs = NearestNeighbors(n_neighbors=K_largest, algorithm='ball_tree').fit(X_small.T)
+
+    K_ranges = np.arange(2, 10, 1)
+    sigma_ranges = np.array([0.25, 0.5, 1, 1.5, 2, 2.5, 3, 4, 5])
+
+    Kcoord, sigma_coord = np.meshgrid(K_ranges, sigma_ranges, indexing='ij')
+    errors = np.zeros(Kcoord.shape)
+    for ki in range(len(K_ranges)):
+        K = K_ranges[ki]
+        distances, indices = nbrs.kneighbors(X_small.T, K)
+        for sigma_i in range(len(sigma_ranges)):
+            sq_sigma = sigma_ranges[sigma_i] ** 2
+            # build affinity matrix W
+            W = np.zeros((X_small.shape[1], X_small.shape[1]))
+            for i in range(X_small.shape[1]):
+                for j in range(len(indices[i])):
+                    index = indices[i][j]
+                    dist = distances[i][j]
+                    w = np.exp(- dist ** 2 / 2 / sq_sigma)
+                    W[i, index] = W[index, i] = w
+
+            clus, _ = spectralClustering(W, n)
+            error = clustering_error(clus, labels_small, n)
+            errors[ki, sigma_i] = error
+
+    show_error_table(errors, sigma_ranges, K_ranges)
 
 
-
+# load faces
 mat = scipy.io.loadmat('ExtendedYaleB.mat')
 
-X = mat['EYALEB_DATA'] / 255.
+X = mat['EYALEB_DATA'] / 255.  # rescale data to [0,1]
 labels = mat['EYALEB_LABEL'].flatten()
 labels -= 1  # to make range in {0, 1, ..., n-1}
 
-imshape=(48,42)
-illum_num = 64
-
-
-
+illum_num = 64 # number of faces for each person
 
 n = 2
 X_small = X[:, 0:illum_num*n]
 labels_small = labels[0:illum_num*n]
 
-K_largest = 30
-nbrs = NearestNeighbors(n_neighbors=K_largest, algorithm='ball_tree').fit(X_small.T)
+find_best_K_and_sigma(X_small, labels_small, n)
 
-K_ranges = np.arange(2, 10, 1)
-sigma_ranges = np.array([0.25, 0.5, 1, 1.5, 2, 2.5, 3, 4, 5])
-
-Kcoord, sigma_coord = np.meshgrid(K_ranges, sigma_ranges, indexing='ij')
-errors = np.zeros(Kcoord.shape)
-for ki in range(len(K_ranges)):
-    K = K_ranges[ki]
-    distances, indices = nbrs.kneighbors(X_small.T, K)
-    for sigma_i in range(len(sigma_ranges)):
-        sq_sigma = sigma_ranges[sigma_i]**2
-        # build affinity matrix W
-        W = np.zeros((X_small.shape[1], X_small.shape[1]))
-        for i in range(X_small.shape[1]):
-            for j in range(len(indices[i])):
-                index = indices[i][j]
-                dist = distances[i][j]
-                w = np.exp(- dist**2 / 2 / sq_sigma)
-                W[i, index] = W[index, i] = w
-
-        clus, _ = spectralClustering(W, n)
-        error = clustering_error(clus, labels_small, n)
-        errors[ki, sigma_i] = error
-        # print(clus)
-        # print(labels_small)
-
-show_error_table(errors, sigma_ranges, K_ranges)
-# fig = plt.figure()
-# ax = fig.gca(projection='3d')
-# ax.scatter(Kcoord, sigma_coord, errors)
-# plt.show()
+clus, _, _ = K_Subspaces(X_small, n, [3,3])  # 3 dimension subspace for face
+error = clustering_error(clus, labels_small, n)
+print(error)
