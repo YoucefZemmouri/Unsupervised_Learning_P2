@@ -24,10 +24,10 @@ def spectralClustering(W, n):
     """
     N = W.shape[0]
     L = np.diag(W.dot(np.ones(N))) - W
-    evalue, evector = LA.eig(L)
-    Y = np.matrix(evector[0:n])
-    Clus = KMeans(n_clusters=n, random_state=0).fit(Y.T)
-    return Clus.labels_, Y.T
+    evalue, evector = LA.eigh(L)
+    Y = evector[:,0:n]
+    Clus = KMeans(n_clusters=n, random_state=0).fit(Y)
+    return Clus.labels_, Y
 
 
 # Sparse Subspace Clustering for Noisy Data
