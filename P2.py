@@ -1,32 +1,9 @@
 from Tools import *
 import scipy.io
 from sklearn.neighbors import NearestNeighbors
-from scipy.optimize import linear_sum_assignment
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import matplotlib.colors
-
-
-def clustering_error(clus, labels, n):
-    """
-    Evaluation of Clustering with Hungarian algorithm
-    :param clus: 1-d array of labels to evaluate, range in {0, 1, ..., n-1}
-    :param labels: 1-d array of ground truth labels, range in {0, 1, ..., n-1}
-    :param n: number of groups
-    :return: error: minimum error percentage obtained among all permutations
-
-    """
-    assert(len(clus) == len(labels))
-    N = len(clus)
-    A = np.zeros((n,n))  # A[i,j] means number of samples in group i which are classified in group j by 'clus'
-    for k in range(len(labels)):
-        A[labels[k], clus[k]] += 1
-    # we want to maximize the number of correctly classified samples
-    # while linear_sum_assignment will minimize
-    W = np.max(A) - A
-    row_ind, col_ind = linear_sum_assignment(W)
-    correctly_classified_samples = A[row_ind, col_ind].sum()
-    return 1-correctly_classified_samples/N
 
 
 def show_error_table(cells, sigmas, Ks):
