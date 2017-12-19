@@ -92,7 +92,7 @@ def NormalizedSpectralClustering(n, W):
     return Clus.labels_, Y
 
 
-def SSC(X, n, mu2=0.1, tau=0.1, epsilon=0.01):
+def SSC(X, n, mu2=0.1, tau=0.1, epsilon=0.01, verbose=True):
     """
     SSC for Noisy Data (Algorithm 8.6)
     :param X: Data
@@ -101,7 +101,7 @@ def SSC(X, n, mu2=0.1, tau=0.1, epsilon=0.01):
     :param tau: step gradient ascent
     :return: Segmentation of the data into n groups
     """
-    C = LASSO(X, mu2, tau, epsilon)
+    C = LASSO(X, mu2, tau, epsilon, verbose)
     W = np.abs(C) + (np.abs(C)).T
     return NormalizedSpectralClustering(n, W)
 
