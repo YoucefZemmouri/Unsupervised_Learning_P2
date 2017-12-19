@@ -57,15 +57,14 @@ def LASSO(X, mu2=0.1, tau=0.1, epsilon=0.01,verbose=True):
         # C = C - np.diag(np.diag(C))
         L = L + mu2 * (Z - C)
         max_norm = np.max(np.abs(Z - C))
-        if count % 10 == 0:
+        if (count % 10 == 0) and verbose:
             print('i=', count, ' step = ', max_norm)
         if max_norm < epsilon:
             break
         old_C=C
         count += 1
     elapsed = time.time() - t
-    if verbose==True:
-        print(count, ' iterations used, ', elapsed, ' seconds')
+    print(count, ' iterations used, ', elapsed, ' seconds')
     return C
 
 
