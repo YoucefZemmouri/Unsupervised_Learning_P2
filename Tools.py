@@ -32,7 +32,7 @@ def SpectralClustering(W, n):
 
 
 # Sparse Subspace Clustering for Noisy Data
-def LASSO(X, mu2=0.1, tau=0.1, epsilon=0.01):
+def LASSO(X, mu2=0.1, tau=0.1, epsilon=0.01,verbose=True):
     """
     Matrix LASSO Minimization by ADMM (Algorithm 8.5)
     :param X: Data matrix
@@ -64,7 +64,8 @@ def LASSO(X, mu2=0.1, tau=0.1, epsilon=0.01):
         old_C=C
         count += 1
     elapsed = time.time() - t
-    print(count, ' iterations used, ', elapsed, ' seconds')
+    if verbose==True:
+        print(count, ' iterations used, ', elapsed, ' seconds')
     return C
 
 
