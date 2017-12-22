@@ -64,10 +64,9 @@ def LASSO(X, mu2=0.1, tau=0.1, epsilon=0.01,verbose=True):
             print('i=', count, ' step = ', max_norm)
         if max_norm < epsilon:
             break
-        old_C=C
         count += 1
     elapsed = time.time() - t
-    print(count, ' iterations used, ', elapsed, ' seconds')
+    print('LASSO: {} iteration used, {} seconds'.format(count, elapsed))
     return C
 
 
@@ -96,7 +95,7 @@ def NormalizedSpectralClustering(n, W):
 
 def SSC(X, n, mu2=0.1, tau=0.1, epsilon=0.01, verbose=True):
     """
-    SSC for Noisy Data (Algorithm 8.6)
+    Sparse Subspace Clustering for Noisy Data (Algorithm 8.6)
     :param X: Data
     :param n: number of linear subspaces
     :param mu2: Algorithm parameter
@@ -217,6 +216,13 @@ def clustering_error(clus, labels, n):
 
 
 def affinity(X, K, sigma):
+    """
+    Build affinity matrix for data X, with K-NN and Gaussian distance
+    :param X: Data, each column is a sample
+    :param K: K for K-NN
+    :param sigma: sigma for Gaussian
+    :return: W: symmetric affinity matrix
+    """
     NN = NearestNeighbors(n_neighbors=K, algorithm='ball_tree').fit(X.T)
     dist, neigh = NN.kneighbors(X.T, K)
     N = X.shape[1]
@@ -231,6 +237,12 @@ def affinity(X, K, sigma):
 
 
 def show_error_table(errors, sigmas, Ks):
+    """
+    Show error table of clustering errors with different choices of sigma and K
+    :param errors: numpy array, error[K_i, sigma_j] is in [0, 1]
+    :param sigmas: list of sigma
+    :param Ks: list of K
+    """
     errors = errors.round(3)
     Ks = [str(x)+'-NN' for x in Ks]
     fig = plt.figure()
