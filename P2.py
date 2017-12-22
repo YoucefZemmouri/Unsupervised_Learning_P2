@@ -52,6 +52,20 @@ def study_restart_for_Ksubspace(X, labels, n):
     plt.ylabel('Sum of Sqaured Distance of point to nearest plane')
     plt.show()
 
+def find_best_tau_and_mu_for_SSC(X, labels, n):
+    Tau_ranges = np.array([0.1, 1, 10, 100, 1000])
+    Mu_ranges = np.array([10, 100, 1000, 10000, 100000])
+    errors = np.zeros((len(Tau_ranges), len(Mu_ranges)))
+    for ti in range(len(Tau_ranges)):
+        print('.', end='')
+        tau = Tau_ranges[ti]
+        for mi in range(len(Mu_ranges)):
+            mu = Mu_ranges[mi]
+            clus, _ = SSC(X, n, tau=tau, mu2=mu, epsilon=0.00001, verbose=False)
+            errors[ti, mi] = clustering_error(clus, labels, n)
+
+    show_error_table_SSC(errors, Tau_ranges, Mu_ranges)
+
 
 # load faces
 mat = scipy.io.loadmat('ExtendedYaleB.mat')
@@ -63,8 +77,8 @@ labels_global -= 1  # to make range in {0, 1, ..., n-1}
 illum_num = 64  # number of faces for each person
 
 
-# select n first individuals
-n = 2
+# select first n individuals
+n = 10
 selections = []
 for i in range(n):
     for j in range(len(labels_global)):
@@ -81,16 +95,18 @@ print('{} groups, {} faces in total'.format(n, X.shape[1]))
 
 
 # ------ SpectralClustering ------
+# uncomment this to play with parameters
 # find_best_K_and_sigma_for_SC(X, labels, n)
-# W = affinity(X, K=4, sigma=4.0)
-# clus, _ = SpectralClustering(W, n)
-# e = clustering_error(clus, labels, n);
-# print('SC clustering error = {:.2f}%, K={},s={}'.format(e*100,4,4.0))
+W = affinity(X, K=4, sigma=4.0)
+clus, _ = SpectralClustering(W, n)
+e = clustering_error(clus, labels, n);
+print('SC clustering error = {:.2f}%, K={},s={}'.format(e*100,4,4.0))
 
 
 
 
 # ------ K subspace ------
+# uncomment this to play with parameters
 # study_restart_for_Ksubspace(X,labels,n)
 
 di = [3] * n  # 3 dimension subspace for faces
@@ -103,6 +119,12 @@ print('K-subspace clustering error = {:.2f}%'.format(error * 100))
 
 
 # ------  SSC  ------
-clus, _ = SSC(X, n, tau=0.05, mu2=1000, epsilon=0.0000001)
+tau_min = tau_min_for_SSC(X)
+print('tau_min = {}'.format(tau_min))
+
+# uncomment this to play with parameters
+# find_best_tau_and_mu_for_SSC(X, labels, n)
+
+clus, _ = SSC(X, n, tau=1, mu2=10000, epsilon=0.00001, verbose=True)
 error = clustering_error(clus, labels, n)
 print('SSC, clustering error = {:.2f}%'.format(error*100))
