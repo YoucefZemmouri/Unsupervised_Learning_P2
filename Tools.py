@@ -167,6 +167,7 @@ def K_Subspaces(X, n, d, restart):
 
             I = np.identity(D)
             sqdist = np.zeros((n, N))  # dist[l,j] means distance of X_j to Subspace_l
+            sum_sq_dist = 0
             for l in range(n):
                 # A = (I - U[l].dot(U[l].T)) # don't do this , U[l].dot(U[l].T) too slow
                 for j in range(N):
@@ -179,11 +180,11 @@ def K_Subspaces(X, n, d, restart):
             for j in range(N):
                 l_best_for_j = np.argmin(sqdist[:, j])
                 subspace_has[l_best_for_j].append(j)
+                sum_sq_dist += sqdist[l_best_for_j, j]
             if subspace_has_old == subspace_has:  # stop when no updates for assignments
                 break
             subspace_has_old = subspace_has
 
-        sum_sq_dist = sqdist.sum()
         print('sum_sq_dist = {}'.format(sum_sq_dist))
         if sum_sq_dist < minimum_sum_sq_dist:
             minimum_sum_sq_dist = sum_sq_dist
