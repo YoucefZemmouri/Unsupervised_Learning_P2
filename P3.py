@@ -100,7 +100,7 @@ def clustering(X, labels, n):
         )
     )
     
-    return errorSp, errorSSC, errorKS
+    return [errorSp, errorSSC, errorKS]
 
 # Load the data    
 

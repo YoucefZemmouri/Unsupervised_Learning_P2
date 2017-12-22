@@ -66,11 +66,12 @@ def LASSO(X, mu2=0.1, tau=0.1, epsilon=0.01,verbose=True):
             break
         count += 1
     elapsed = time.time() - t
-    print('LASSO: {} iteration used, {} seconds'.format(count, elapsed))
+    if verbose:
+        print('LASSO: {} iteration used, {} seconds'.format(count, elapsed))
     return C
 
 
-def NormalizedSpectralClustering(n, W):
+def NormalizedSpectralClustering(n, W, verbose):
     """
     Normalized Spectral Clustering (Algorithm 4.7)
     :param n: Number of clusters
@@ -79,7 +80,7 @@ def NormalizedSpectralClustering(n, W):
     """
     N = W.shape[0]
     D = W.dot(np.ones(N))
-    if np.any(D == 0):
+    if np.any(D == 0) and verbose:
         print("Warning: at least one sample is completely isolated from others")
     D_12 = np.sqrt(D)  # D is diagonal, inv(D) = 1/D
     D_12[D_12 != 0] = 1/D_12[D_12 != 0]
@@ -104,7 +105,7 @@ def SSC(X, n, mu2=0.1, tau=0.1, epsilon=0.01, verbose=True):
     """
     C = LASSO(X, mu2, tau, epsilon, verbose)
     W = np.abs(C) + (np.abs(C)).T
-    return NormalizedSpectralClustering(n, W)
+    return NormalizedSpectralClustering(n, W, verbose)
 
 
 def K_Subspaces(X, n, d, restart, verbose=True):
