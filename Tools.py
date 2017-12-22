@@ -247,12 +247,12 @@ def show_error_table(errors, sigmas, Ks):
     Ks = [str(x)+'-NN' for x in Ks]
     fig = plt.figure()
     ax = fig.gca()
-    ax.axis('tight')
-    ax.axis('off')
-    the_table = ax.table(cellText=errors,
+    the_table = ax.table(cellText=errors*100,
                          rowLabels=Ks,
                          colLabels=sigmas,
                          loc='center',
                          cellColours=plt.cm.cool(errors))
-    plt.title('Clustering error with choice of sigma and k-NN')
+    ax.axis('tight')
+    ax.axis('off')
+    # plt.title('Clustering error percentage with choice of sigma and k-NN')
     plt.show()
