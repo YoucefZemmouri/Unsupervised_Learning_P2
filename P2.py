@@ -15,7 +15,7 @@ def find_best_K_and_sigma(X_small, labels_small, n):
     for ki in range(len(K_ranges)):
         K = K_ranges[ki]
         for sigma_i in range(len(sigma_ranges)):
-            W = affinity(X_small, K, sigma_i)
+            W = affinity(X_small, K, sigma_ranges[sigma_i])
 
             clus, _ = SpectralClustering(W, n)
             errors[ki, sigma_i] = clustering_error(clus, labels_small, n)
