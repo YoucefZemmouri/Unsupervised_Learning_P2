@@ -60,7 +60,7 @@ def LASSO(X, mu2=0.1, tau=0.1, epsilon=0.01,verbose=True):
         # C = C - np.diag(np.diag(C))
         L = L + mu2 * (Z - C)
         max_norm = np.max(np.abs(Z - C))
-        if (count % 10 == 0) and verbose:
+        if (count % 100 == 0) and verbose:
             print('i=', count, ' step = ', max_norm)
         if max_norm < epsilon:
             break
@@ -79,7 +79,7 @@ def NormalizedSpectralClustering(n, W):
     """
     N = W.shape[0]
     D = W.dot(np.ones(N))
-    if np.any(D == 0):
+    if np.any(np.abs(D) < 1e-8):
         print("Warning: at least one sample is completely isolated from others")
     D_12 = np.sqrt(D)  # D is diagonal, inv(D) = 1/D
     D_12[D_12 != 0] = 1/D_12[D_12 != 0]
@@ -263,7 +263,33 @@ def show_error_table(errors, sigmas, Ks):
                          bbox=(0,0,1,1))
     ax.axis('tight')
     ax.axis('off')
-    # fig.tight_layout()
     fig.set_size_inches(w=7, h=3)
-    # plt.title('Clustering error percentage with choice of sigma and k-NN')
     plt.show()
+
+def show_error_table_SSC(errors, taus, mus):
+    """
+    Show error table of clustering errors with different choices of tau and mu
+    :param errors: numpy array, error[tau_i, mu_j] is in [0, 1]
+    """
+    errors = errors.round(3)
+    fig = plt.figure()
+    ax = fig.gca()
+    the_table = ax.table(cellText=errors*100,
+                         rowLabels=taus,
+                         colLabels=mus,
+                         loc='center',
+                         cellColours=plt.cm.cool(errors),
+                         bbox=(0,0,1,1))
+    ax.axis('tight')
+    ax.axis('off')
+    fig.set_size_inches(w=7, h=3)
+    plt.show()
+
+def tau_min_for_SSC(X):
+    # see lemma 8.28 in book
+    N = X.shape[1]
+    A = X.T.dot(X)
+    np.fill_diagonal(A, 0)
+    ma = np.max(A, 1)
+    mi = np.min(ma)
+    return 1/mi
