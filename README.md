@@ -2,7 +2,7 @@
 
 ## For Problem 2
 
-Lance P2.py to see result in three algorithms
+Run P2.py to see result in three algorithms
 
 You can change "n" to change the number of groups to use in data
 
@@ -15,3 +15,7 @@ Uncomment lines like:
 `find_best_tau_and_mu_for_SSC(X, labels, n)`
 
 to play on variables
+
+## For Problem 3
+
+Run P3.py to see result in three algorithms
