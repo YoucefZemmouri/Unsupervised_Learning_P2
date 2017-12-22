@@ -107,7 +107,7 @@ def clustering(X, labels, n):
 X_global, labels_global, n_global = load_data()
 
 Keys_1 = ["1R2RC", "1R2TCR", "1R2TCRT", "1RT2TC", "2T3RCR"]
-Keys_2 = ["cars1", "cars2", "cars3", "cars4", "cars5"]
+Keys_2 = ["cars1", "cars3", "cars4", "cars6", "cars7"]
 Keys_3 = ["head", "kanatani1", "arm", "articulated", "people1"]
 Keys = Keys_1+Keys_2+Keys_3
 
