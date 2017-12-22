@@ -164,14 +164,16 @@ def K_Subspaces(X, n, d, restart):
                 U[l] = pca.components_.T
 
             # Calculate distance
+
             I = np.identity(D)
             sqdist = np.zeros((n, N))  # dist[l,j] means distance of X_j to Subspace_l
             for l in range(n):
-                A = (I - U[l].dot(U[l].T))
+                # A = (I - U[l].dot(U[l].T)) # don't do this , U[l].dot(U[l].T) too slow
                 for j in range(N):
-                    v = A.dot(X[:, j]-Mus[:, l])
+                    xc = X[:, j]-Mus[:, l]
+                    # v = A.dot(X[:, j]-Mus[:, l])
+                    v = xc - U[l].dot(U[l].T.dot(xc))
                     sqdist[l, j] = np.sum(v*v)
-
             # Assign point to nearest subspace
             subspace_has = [[] for _ in range(n)]
             for j in range(N):
