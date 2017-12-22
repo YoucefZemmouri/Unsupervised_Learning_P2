@@ -33,22 +33,32 @@ illum_num = 64  # number of faces for each person
 
 
 # select n first individuals
-n = 2
-X = X_global[:, 0:illum_num * n]
-labels = labels_global[0:illum_num * n]
+n = 10
+selections = []
+for i in range(n):
+    for j in range(len(labels_global)):
+        if labels_global[j] == i:
+            selections.append(j)
+
+X = X_global[:, selections]
+labels = labels_global[selections]
 
 print('{} groups, {} faces in total'.format(n,X.shape[1]))
 
 
 # SpectralClustering
 find_best_K_and_sigma_for_SC(X, labels, n)
+# W = affinity(X, K=4, sigma=4.0)
+# clus, _ = SpectralClustering(W, n)
+# e = clustering_error(clus, labels, n);
+# print('SC clustering error = {:.2f}%, K={},s={}'.format(e*100,4,4.0))
 
 # K subspace
 for i in range(5):  # multiple trials for K-subspace
     di = [3]*n  # 3 dimension subspace for faces
     clus, sq_dist, _, _ = K_Subspaces(X, n, di, restart=1)
     error = clustering_error(clus, labels, n)
-    print('clustering error = {:.2f}%'.format(error*100))
+    print('K-subspace clustering error = {:.2f}%'.format(error*100))
 
 # SSC
 clus, _ = SSC(X, n, tau=0.05, mu2=1000, epsilon=0.0000001)
