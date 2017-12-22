@@ -2,11 +2,13 @@ from __future__ import print_function
 import numpy as np
 from sklearn.cluster import KMeans
 from numpy import linalg as LA
-from scipy import linalg as sLA
 import time
-from scipy.stats import ortho_group
 from sklearn.decomposition import PCA
 from scipy.optimize import linear_sum_assignment
+from sklearn.neighbors import NearestNeighbors
+
+import matplotlib.pyplot as plt
+import matplotlib.colors
 
 def SoftThreshold(epsilon, x):
     """
@@ -212,3 +214,33 @@ def clustering_error(clus, labels, n):
     row_ind, col_ind = linear_sum_assignment(W)
     correctly_classified_samples = A[row_ind, col_ind].sum()
     return 1-correctly_classified_samples/N
+
+
+def affinity(X, K, sigma):
+    NN = NearestNeighbors(n_neighbors=K, algorithm='ball_tree').fit(X.T)
+    dist, neigh = NN.kneighbors(X.T, K)
+    N = X.shape[1]
+    W = np.zeros((N, N))
+    sqsigma2 = 2 * sigma ** 2
+    for i in range(N):
+        for j in range(K):
+            w = np.exp(- dist[i][j] ** 2 / sqsigma2)
+            nb = neigh[i][j]
+            W[i, nb] = W[nb, i] = w
+    return W
+
+
+def show_error_table(errors, sigmas, Ks):
+    errors = errors.round(3)
+    Ks = [str(x)+'-NN' for x in Ks]
+    fig = plt.figure()
+    ax = fig.gca()
+    ax.axis('tight')
+    ax.axis('off')
+    the_table = ax.table(cellText=errors,
+                         rowLabels=Ks,
+                         colLabels=sigmas,
+                         loc='center',
+                         cellColours=plt.cm.cool(errors))
+    plt.title('Clustering error with choice of sigma and k-NN')
+    plt.show()

@@ -1,25 +1,7 @@
 from Tools import *
 import scipy.io
 from sklearn.neighbors import NearestNeighbors
-from mpl_toolkits.mplot3d import Axes3D
-import matplotlib.pyplot as plt
-import matplotlib.colors
 
-
-def show_error_table(cells, sigmas, Ks):
-    cells = cells.round(3)
-    Ks = [str(x)+'-NN' for x in Ks]
-    fig = plt.figure()
-    ax = fig.gca()
-    ax.axis('tight')
-    ax.axis('off')
-    the_table = ax.table(cellText=cells,
-                         rowLabels=Ks,
-                         colLabels=sigmas,
-                         loc='center',
-                         cellColours=plt.cm.cool(cells))
-    plt.title('Clustering error with choice of sigma and k-NN')
-    plt.show()
 
 
 def find_best_K_and_sigma(X_small, labels_small, n):
@@ -32,21 +14,11 @@ def find_best_K_and_sigma(X_small, labels_small, n):
     errors = np.zeros((len(K_ranges), len(sigma_ranges)))
     for ki in range(len(K_ranges)):
         K = K_ranges[ki]
-        distances, indices = nbrs.kneighbors(X_small.T, K)
         for sigma_i in range(len(sigma_ranges)):
-            sq_sigma = sigma_ranges[sigma_i] ** 2
-            # build affinity matrix W
-            W = np.zeros((X_small.shape[1], X_small.shape[1]))
-            for i in range(X_small.shape[1]):
-                for j in range(len(indices[i])):
-                    index = indices[i][j]
-                    dist = distances[i][j]
-                    w = np.exp(- dist ** 2 / 2 / sq_sigma)
-                    W[i, index] = W[index, i] = w
+            W = affinity(X_small, K, sigma_i)
 
             clus, _ = SpectralClustering(W, n)
-            error = clustering_error(clus, labels_small, n)
-            errors[ki, sigma_i] = error
+            errors[ki, sigma_i] = clustering_error(clus, labels_small, n)
 
     show_error_table(errors, sigma_ranges, K_ranges)
 
@@ -80,7 +52,7 @@ find_best_K_and_sigma(X_small, labels_small, n)
 
 # K subspace
 for i in range(5):  # multiple trials for K-subspace
-    di = [3,3]  # 3 dimension subspace for faces
+    di = [3]*n  # 3 dimension subspace for faces
     clus, sq_dist, _, _ = K_Subspaces(X_small, n, di, restart=1)
     error = clustering_error(clus, labels_small, n)
     print('clustering error = {:.2f}%'.format(error*100))

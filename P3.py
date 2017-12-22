@@ -1,12 +1,11 @@
+from __future__ import print_function
 from Tools import *
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 
 from scipy.io import loadmat
 import os
-from scipy.optimize import linear_sum_assignment
-from sklearn.neighbors import NearestNeighbors
+
 
 def load_data():
     while 'Hopkins155' not in os.listdir("."):
@@ -42,26 +41,17 @@ def load_data():
             os.chdir('..')
     return X_global, labels_global, n_global
 
-def affinity(X, K, sigma):
-    NN = NearestNeighbors(n_neighbors=K, algorithm='ball_tree').fit(X.T)
-    dist, neigh = NN.kneighbors(X.T, K)
-    W = np.zeros((X.shape[1], X.shape[1]))
-    for i in range(X.shape[1]):
-        for j in range(K):
-            w = np.exp(- dist[i][j] ** 2 / (2 * sigma**2))
-            W[i, neigh[i][j]] = w
-            W[neigh[i][j], i] = w
-    return W
 
 def clustering(X, labels, n):
     # Spectral Clustering
 
-    sigmas = [0.1, 0.3, 0.5, 1, 3, 5, 10, 30, 50]
-    Ks = [2, 3, 4, 5, 6, 7, 8, 9, 10]
+    sigmas = [0.1, 0.3, 0.5, 1, 2, 5, 10, 30, 100, 10000, 1000000]
+    Ks = [2, 3, 4, 5, 10, 50, 100, 200, 300, 400]
 
     error_sp = []
 
     for K in Ks:
+        print('.', end='')
         error_sp.append([])
         for sigma in sigmas:
             W = affinity(X, K, sigma)
@@ -71,14 +61,17 @@ def clustering(X, labels, n):
 
     K_min = error_sp.min(1).idxmin()
     sigma_min = error_sp.T[K_min].idxmin()
-    print("Minimal error (spectral clustering) :",np.round(error_sp[sigma_min][K_min]*100,3),"% (K :",K_min,", sigma:",sigma_min,")")
+    print("Minimal error (spectral clustering) = {:.2f}%, (K_min:{}, sigma_min:{})".format(
+        np.round(error_sp[sigma_min][K_min]*100,3),K_min,sigma_min)
+    )
+    show_error_table(np.array(error_sp), sigmas, Ks)
 
     # Subspace clustering 
     tau=0.005
     mu2=1000
     epsilon=0.1
     clus, _ = SSC(X, n, tau, mu2, epsilon, verbose=False)
-    print("Minimal error (subspace clustering) :",np.round(100*clustering_error(clus, labels, n)),"% (tau :",tau,")")
+    print("Minimal error (subspace clustering) = {:.2f}%, (tau:{})".format(np.round(100*clustering_error(clus, labels, n)),tau))
 
     # K subspace
     error = []
@@ -99,4 +92,5 @@ key = '1R2RC'
 X = X_global[key]
 labels = labels_global[key]
 n = n_global[key]
+print("{} points in {} frames, {} groups".format(X.shape[1], X.shape[0]/2, n))
 clustering(X, labels, n)
