@@ -125,7 +125,7 @@ def K_Subspaces(X, n, d, restart, verbose=True):
 
     for r in range(restart):
         if verbose:
-            print('Repeat {}: '.format(r), end='')
+            print('Repeat {}: '.format(r), end='', flush=True)
         Mus = np.zeros((D, n))
         U = [np.array([]) for _ in range(n)]
 
@@ -147,7 +147,7 @@ def K_Subspaces(X, n, d, restart, verbose=True):
         count = 0
         while True:
             if verbose:
-                print(str(count)+' ', end='')
+                print(str(count)+' ', end='', flush=True)
             count += 1
             # Do PCA for each subspace
             for l in range(n):
