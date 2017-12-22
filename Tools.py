@@ -259,8 +259,11 @@ def show_error_table(errors, sigmas, Ks):
                          rowLabels=Ks,
                          colLabels=sigmas,
                          loc='center',
-                         cellColours=plt.cm.cool(errors))
+                         cellColours=plt.cm.cool(errors),
+                         bbox=(0,0,1,1))
     ax.axis('tight')
     ax.axis('off')
+    # fig.tight_layout()
+    fig.set_size_inches(w=7, h=3)
     # plt.title('Clustering error percentage with choice of sigma and k-NN')
     plt.show()
